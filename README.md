@@ -1,92 +1,74 @@
-# Embedded Software Developer
+# Assessment Embedded Software Developer
+
+This is a repository that contains information for the Embedded Software Developer Assessment. 
+Create your own repository on GitHub/Gitlab with the project files and share the link to your repository with us.
+ 
+## 1. Context
+
+Below is a short explanation of how our machine works: a machine consists of multiple devices connected through a shared RS485 bus. 
+
+### Junior
+Each Junior has a unique address ranging from 1..253. This is configured with 8 DIP-switches on the PCB.
+Upon boot, the Junior's state will be `STATE_NOT_INITIALIZED`. Only when the Junior receives a `ConfigureCommand`, it's state will become `STATE_IDLE` after this command finishes. The Junior can also receive other commands (e.g: `MotorRunToPositionCommand`, or `PumpCommand`). When a Junior receives such a command, it will immediately start executing it and the Junior's state will be `STATE_BUSY`. When finished, it's state will be `STATE_IDLE` again.
 
 
+There are different Junior deviceTypes, for example we have a `JUNIOR_MOTOR` (1) that can run MotorCommands, but also a `JUNIOR_PUMP` (2) that accepts PumpCommands to send pulses to a Pump to dose a certain volume of an perfume ingredient.
 
-## Getting started
+### Senior
+There is 1 master device (_Senior_) that keeps track of every Junior's properties (e.g. state, deviceType, version, currentCommandId) by regularly polling each known Junior. 
+The Senior can also send a command to the Junior, for example the ConfigureCommand, to configure the Junior to do some stuff
+This Senior is a Linux C++ application that sends and receives bus messages through a serial UART port.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+### RS485 Bus 
+All devices are listening to the serial bus, so this means that all devices receive all sent messages, but only the Junior with the address of payload.receiverAddress should respond accordingly.
 
-## Add your files
+## 2. Assignment
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
-
+### Pre-requisites
+First, install `socat` to be able to create byte streams:
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/scentronix/assessments/embedded-software-developer.git
-git branch -M main
-git push -uf origin main
+$ apt update
+$ apt install socat
 ```
 
-## Integrate with your tools
+Make `start.sh` executable (only needed once of course) and run the script to create the ports:
+```
+$ sudo chmod +x start.sh
+$ ./start.sh
+```
+This process should be kept open to keep the bytestreams open during the running of the applications.
 
-- [ ] [Set up project integrations](https://gitlab.com/scentronix/assessments/embedded-software-developer/-/settings/integrations)
+In both applications, you may use the SerialPort class in `library/SerialPort` to open the byte stream as a serial port.
 
-## Collaborate with your team
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
 
-## Test and Deploy
 
-Use the built-in continuous integration in GitLab.
+### Assignment
+As explained above the machine works using a physical RS485 bus. We want you to create a simplified virtual simulation of the machine that can be used to run tests to test RS485 Bus communication. To simulate the serial port we are going to use `socat`. 
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+Your job is to write two applications: the Senior and the Junior.
+Using the socat tunnels as virtual bus, write the communication logic for the Senior and the Junior.
+There should be running one instance of the Senior (address: 254) and 5 instances of the Junior app running (see `devices` folder)
+Use a bash script (or extend `start.sh`) to start all instances. Each executable should take command-line parameters for RX port, TX port, address, deviceType.
 
-***
+ The Junior application should have initially state `STATE_NOT_INITIALIZED`. Only after it receives a `ConfigureCommand` for this particular junior with this address, this junior will initialize "it's peripherals"  and then this Junior can change it's status to `STATUS_IDLE`. Show this also by logging this to the console.
+ 
+ Senior should begin in a state `WAITING_FOR_CONFIG`. In this state it will read the configuration from the `devices` folder and will then move to `CONFIGURING` state. In this state it will send a `ConfigureCommand` to each Junior containing the configuration from the JSON. The senior should also regularly poll attributes (such as address, deviceType, status) from each Junior to keep track of all juniors. It will try to configure each Junior until all Juniors have `STATE_IDLE`. If so, the Senior's state will move to `IN_PRODUCTION`.
 
-# Editing this README
+The goal of this assignment is to have a Senior application in state `IN_PRODUCTION`, e.g. regularly polling all Junior Applications through the virtual bus and responding with `STATE_IDLE`.
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+## 3. Tips
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+- Neatly written and properly formatted production-level code
+- Demonstrate Linux Bash scripting
+- Demonstration of knowledge of Object Oriented Programming in C/C++
+- Demonstrate shared usage of classes between applications (parsing etc)
+- Demonstrate logging skills
+- Implementing additional commands such as `MotorRunToPositionCommand`, is appreciated.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Good luck!
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
