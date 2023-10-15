@@ -39,10 +39,7 @@ void Junior::handleConfigureCommand() {
     std::cout << "Junior (Address: " << static_cast<int>(address) << ") is now in STATE_IDLE." << std::endl;
 }
 
-void Junior::handleCommands() {
-    // Implement logic to handle various commands
-    // For simplicity, we will simulate command execution
-
+void Junior::handleCommands() {	
     if (state == STATE_IDLE) {
         if (deviceType == JUNIOR_MOTOR) {
             std::cout << "Junior (Address: " << static_cast<int>(address) << ") executing MotorCommand" << std::endl;
@@ -55,16 +52,15 @@ void Junior::handleCommands() {
     }
 }
 
-
+//executemotorcommand  is used to  position the motor based on the configuration given by json.
 void Junior::executeMotorCommand() {
     if (state == STATE_IDLE) {
-        // Implement logic to execute a MotorCommand
-        // You can use the motor configuration parameters here
         std::cout << "Junior (Address: " << static_cast<int>(address) << ") executing MotorCommand" << std::endl;
         
         // Example motor control:
         MotorConfiguration motorConfig;
         if (deviceType == JUNIOR_MOTOR) {
+	    //use the motor configuration parameters here
             motorConfig.torqueRegulationIdle = device["motor"]["torqueRegulationIdle"].asUInt();
             motorConfig.torqueRegulation = device["motor"]["torqueRegulation"].asUInt();
             motorConfig.overcurrentThreshold = device["motor"]["overcurrentThreshold"].asUInt();
@@ -72,8 +68,7 @@ void Junior::executeMotorCommand() {
             motorConfig.motorDriverType = device["motor"]["motorDriverType"].asUInt();
             motorConfig.isClockwiseWired = device["motor"]["isClockwiseWired"].asBool();
         }
- 
-        
+       
         // Simulate motor operation
         std::this_thread::sleep_for(std::chrono::seconds(2));  // Simulate command execution time
         
@@ -87,35 +82,10 @@ void Junior::executeMotorCommand() {
     handleCommands();  // Simulate execution for simplicity	
 }
 
-
-void Junior::executePumpCommand() {
-    if (state == STATE_IDLE) {
-        // Implement logic to execute a PumpCommand
-        // You can use the pump configuration parameters here
-        std::cout << "Junior (Address: " << static_cast<int>(address) << ") executing PumpCommand" << std::endl;
-        
-        // Example pump control:
-        // You can choose the pump to control based on the pump's index
-        int pumpIndex = /* retrieve the pump index from the PumpCommand */;
-        int pumpType = /* retrieve the pump type from the PumpCommand */;
-        
-        // Depending on the pump type and index, control the corresponding pump
-        // Simulate pump operation
-        std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate command execution time
-        
-        // After executing the command, set the state back to IDLE
-        state = STATE_IDLE;
-        
-        // Optionally, send a state update to the Senior
-        sendStateUpdate();
-    }
-	state = STATE_BUSY;
-    handleCommands();  // Simulate execution for simplicity
-
-}
+//Execute the pump command by using the config paramters by json file
 void Junior::executePumpCommand(int pumpIndex, int pumpType) {
     if (state == STATE_IDLE) {
-        // Implement logic to execute a PumpCommand based on pumpIndex and pumpType
+        // logic to execute a PumpCommand based on pumpIndex and pumpType
         std::cout << "Junior (Address: " << static_cast<int>(address) << ") executing PumpCommand" << std::endl;
 
         // Check the pumpType and index to determine which pump to control
@@ -142,14 +112,14 @@ void Junior::executePumpCommand(int pumpIndex, int pumpType) {
         std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate command execution time
 
         // After executing the command, set the state back to IDLE
-        state = STATE_IDLE;
+     	   state = STATE_IDLE;
 
         // Optionally, send a state update to the Senior
         sendStateUpdate();
     }
+       state = STATE_BUSY;
+       handleCommands();  // Simulate execution for simplicit
 }
-
-
 
 void Junior::sendStateUpdate() {
     // Send a status update to the Senior
