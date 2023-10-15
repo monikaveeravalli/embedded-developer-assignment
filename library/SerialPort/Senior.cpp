@@ -3,6 +3,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 #include "SerialPort.h"
+#include "Serial.h"
 
 using json = nlohmann::json;
 
@@ -105,9 +106,15 @@ public:
 
                 // Send the ConfigureCommand to the Junior
                 junior.sendConfigureCommand(command);
+	        // Log the sent ConfigureCommand
+                std::cout << "Sending ConfigureCommand to Junior " << command.address << std::endl;
+                std::cout << "Command: " << commandStr << std::endl;
 
-                // Add the Junior to the list of configured Juniors
+
+                // Add the Junior to Log that the ConfigureCommand has been sent
+                std::cout << "ConfigureCommand sent to Junior " << command.address << std::endl;
                 juniors.push_back(junior);
+	        
             }
         }
     }
