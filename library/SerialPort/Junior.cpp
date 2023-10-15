@@ -7,47 +7,6 @@
 const uint8_t JUNIOR_ADDRESS = 1;  // Change this to the Junior's address
 const uint32_t BAUDRATE = 9600;
 
-enum JuniorState {
-    STATE_NOT_INITIALIZED,
-    STATE_IDLE,
-    STATE_BUSY
-};
-
-// Define Junior device types
-enum JuniorDeviceType {
-    JUNIOR_MOTOR = 1,
-    JUNIOR_PUMP = 2,
-    // Add more device types as needed
-};
-
-struct MotorConfiguration {
-    uint32_t torqueRegulationIdle;
-    uint32_t torqueRegulation;
-    uint32_t overcurrentThreshold;
-    uint8_t stepSelection;
-    uint8_t motorDriverType;
-    bool isClockwiseWired;
-};
-
-class Junior {
-public:
-    Junior(const char* rxPort, const char* txPort, uint8_t address, JuniorDeviceType deviceType);
-
-    void run();
-
-private:
-    JuniorState state;
-    SerialPort serialPort;
-    uint8_t address;
-    JuniorDeviceType deviceType;
-
-    void handleConfigureCommand();
-    void handleCommands();
-    void executeMotorCommand();
-    void executePumpCommand();
-    void sendStateUpdate();
-};
-
 Junior::Junior(const char* rxPort, const char* txPort, uint8_t address, JuniorDeviceType deviceType)
     : state(STATE_NOT_INITIALIZED), address(address), deviceType(deviceType)
 {
