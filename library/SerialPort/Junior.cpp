@@ -26,7 +26,7 @@ Junior::Junior(const char* rxPort, const char* txPort, uint8_t address, JuniorDe
                 executePumpCommand();
             }
         }
-    }
+    });
 }
 
 void Junior::handleConfigureCommand() {
