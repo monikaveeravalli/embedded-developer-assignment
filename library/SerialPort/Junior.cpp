@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 #include <thread>  // For simulating command execution
+#include "Junior.h"
+#include "Senior.cpp"
 
 const uint8_t JUNIOR_ADDRESS = 1;  // Change this to the Junior's address
 const uint32_t BAUDRATE = 9600;
