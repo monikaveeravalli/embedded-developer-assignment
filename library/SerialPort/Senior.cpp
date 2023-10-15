@@ -6,19 +6,14 @@
 #include "Serial.h"
 
 using json = nlohmann::json;
+//Constants to be used by the below code
+const int POLL_INTERVAL_SECONDS = 5;   
+const int POLL_MESSAGE_SIZE = 8;       
+const int RESPONSE_SIZE = 64;           
+const int RESPONSE_TIMEOUT = 5;         
+const char POLL_COMMAND = 'P';          
 
-enum class SeniorState {
-    WAITING_FOR_CONFIG,
-    CONFIGURING,
-    IN_PRODUCTION,
-};
 
-struct ConfigureCommand {
-    int address;
-    JuniorState targetState;
-    MotorConfig motorConfig;
-    // Add other configuration parameters as needed
-};
 
 class Junior {
 public:
@@ -124,8 +119,6 @@ public:
             for (Junior& junior : juniors) {
                 // Poll attributes (e.g., address, deviceType, status) from each Junior
 				    pollAttributesFromJunior(junior);
-                // Handle responses and update Junior properties
-                // You may set a timeout for responses and retry if needed
             }
         std::this_thread::sleep_for(std::chrono::seconds(POLL_INTERVAL_SECONDS));
     }
@@ -135,6 +128,12 @@ public:
         }
     }
 
+/*pollAttributesFromJunior Function:
+This function constructs a poll message to request information from a specific Junior.
+The poll message is sent to the Junior via the serial port.
+The function waits for and reads the response from the Junior using junior address,pollmsg id and response.
+If a response is received within the timeout, the response is processed and used to update Junior properties.
+This function is called during the polling of Juniors.*/
 
 void Senior::pollAttributesFromJunior(Junior& junior) {
     // Construct a poll message for the Junior
@@ -142,7 +141,7 @@ void Senior::pollAttributesFromJunior(Junior& junior) {
     pollMsg[0] = POLL_COMMAND;          // Define a poll command code
     pollMsg[1] = junior.getAddress();    // Set the Junior's address
     // Add other parameters as needed
-
+    
     // Send the poll message to the Junior and handle responses
     char response[RESPONSE_SIZE];
     if (sendPollMessageToJunior(junior, pollMsg, response)) {
@@ -150,6 +149,11 @@ void Senior::pollAttributesFromJunior(Junior& junior) {
         junior.updateAttributesFromResponse(response);
     }
 }
+/*sendPollMessageToJunior Function:
+This function sends the poll message to a specific Junior via the serial port.
+It waits for and reads the response from the Junior.
+If a response is received within the timeout, the function returns true, indicating that the response was successfully received.
+If no response is received within the timeout, it returns false.*/
 
 bool Senior::sendPollMessageToJunior(Junior& junior, const char* pollMsg, char* response) {
     // Send the poll message to the Junior via the serial port
