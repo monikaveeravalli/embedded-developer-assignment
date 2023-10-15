@@ -24,3 +24,4 @@ public:
 };
 
 #endif /* SerialPort_H_ */
+
