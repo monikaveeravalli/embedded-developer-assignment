@@ -13,7 +13,8 @@ const int RESPONSE_SIZE = 64;
 const int RESPONSE_TIMEOUT = 5;         
 const char POLL_COMMAND = 'P';          
 
-
+//The Junior class plays a key role in handling the behavior of individual junior devices, 
+//such as sending configuration commands and managing their states.
 
 class Junior {
 public:
@@ -21,8 +22,9 @@ public:
         : address(address), deviceType(deviceType), state(JuniorState::STATE_NOT_INITIALIZED) {
         serialPort.connect(port, baudrate);
     }
-
-	void sendConfigureCommand(const ConfigureCommand& command) {
+      // The sendConfigureCommand method is used to send configuration commands to the junior device, 
+      // which allows each junior to configure itself.
+       void sendConfigureCommand(const ConfigureCommand& command) {
         // Serialize the ConfigureCommand to JSON
         json commandJson;
         commandJson["address"] = command.address;
@@ -35,7 +37,7 @@ public:
             {"motorDriverType", command.motorConfig.motorDriverType},
             {"isClockwiseWired", command.motorConfig.isClockwiseWired}
         };
-		// Convert the JSON to a string
+        // Convert the JSON to a string
         std::string commandStr = commandJson.dump();
 
         // Log the sent ConfigureCommand
@@ -55,13 +57,15 @@ public:
 	
 };
 
+//This class represents the senior application and is responsible for 
+// managing a collection of junior devices.
 class Senior {
 public:
     Senior(const char* port, uint32_t baudrate)
         : state(SeniorState::WAITING_FOR_CONFIG) {
         serialPort.connect(port, baudrate);
     }
-
+    
     bool isAllJuniorsConfigured() {
         for (const Junior& junior : juniors) {
             if (junior.getState() != JuniorState::STATE_IDLE) {
@@ -118,7 +122,7 @@ public:
         while (state == SeniorState::IN_PRODUCTION) {
             for (Junior& junior : juniors) {
                 // Poll attributes (e.g., address, deviceType, status) from each Junior
-				    pollAttributesFromJunior(junior);
+                pollAttributesFromJunior(junior);
             }
         std::this_thread::sleep_for(std::chrono::seconds(POLL_INTERVAL_SECONDS));
     }
