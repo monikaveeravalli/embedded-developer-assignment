@@ -8,7 +8,7 @@
 
 SerialPort::SerialPort()
 {
-    // don't forget to run connect()
+  connect()
 }
 
 void SerialPort::connect(const char *port, uint32_t baudrate)
