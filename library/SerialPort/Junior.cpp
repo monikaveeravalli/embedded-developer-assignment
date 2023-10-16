@@ -6,7 +6,7 @@
 #include "Junior.h"
 #include "Senior.cpp"
 
-const uint8_t JUNIOR_ADDRESS = 1;  // Change this to the Junior's address
+const uint8_t JUNIOR_ADDRESS = 1;  
 const uint32_t BAUDRATE = 9600;
 
 Junior::Junior(const char* rxPort, const char* txPort, uint8_t address, JuniorDeviceType deviceType)
@@ -52,7 +52,7 @@ void Junior::handleCommands() {
     }
 }
 
-//executemotorcommand  is used to  position the motor based on the configuration given by json.
+// executemotorcommand  is used to  position the motor based on the configuration given by json.
 void Junior::executeMotorCommand() {
     if (state == STATE_IDLE) {
         std::cout << "Junior (Address: " << static_cast<int>(address) << ") executing MotorCommand" << std::endl;
@@ -79,13 +79,13 @@ void Junior::executeMotorCommand() {
         sendStateUpdate();
     }
     state = STATE_BUSY;
-    handleCommands();  // Simulate execution for simplicity	
+    handleCommands();  
 }
 
 //Execute the pump command by using the config paramters by json file
 void Junior::executePumpCommand(int pumpIndex, int pumpType) {
     if (state == STATE_IDLE) {
-        // logic to execute a PumpCommand based on pumpIndex and pumpType
+        // execute a PumpCommand based on pumpIndex and pumpType
         std::cout << "Junior (Address: " << static_cast<int>(address) << ") executing PumpCommand" << std::endl;
 
         // Check the pumpType and index to determine which pump to control
@@ -102,7 +102,6 @@ void Junior::executePumpCommand(int pumpIndex, int pumpType) {
                 // Control the pump with pumpIndex based on pumpType 3 logic
                 std::cout << "Controlling pump Type 3, Index: " << pumpIndex << std::endl;
                 break;
-            // Add more cases for other pumpTypes as needed
             default:
                 std::cerr << "Unsupported pumpType: " << pumpType << std::endl;
                 break;
@@ -114,7 +113,7 @@ void Junior::executePumpCommand(int pumpIndex, int pumpType) {
         // After executing the command, set the state back to IDLE
      	   state = STATE_IDLE;
 
-        // Optionally, send a state update to the Senior
+        // Send a state update to the Senior
         sendStateUpdate();
     }
        state = STATE_BUSY;
