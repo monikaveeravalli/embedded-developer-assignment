@@ -15,7 +15,6 @@ enum JuniorState {
 enum JuniorDeviceType {
     JUNIOR_MOTOR = 1,
     JUNIOR_PUMP = 2,
-    // Add more device types as needed
 };
 
 struct MotorConfiguration {
